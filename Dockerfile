@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:18.04
 
 # To make it easier for build and release pipelines to run apt-get,
 # configure apt to not require confirmation (assume the -y argument by default)
@@ -17,6 +17,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     netcat \
     libssl1.0 \
   && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && apt-get install maven && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install openjdk-11-jdk && rm -rf /var/lib/apt/lists/*
+ENV JAVA_HOME_11_X64="$JAVA_HOME"
 
 RUN curl -LsS https://aka.ms/InstallAzureCLIDeb | bash \
   && rm -rf /var/lib/apt/lists/*
