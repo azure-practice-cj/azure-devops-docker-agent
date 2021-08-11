@@ -1,5 +1,7 @@
 FROM ubuntu:18.04
 
+# To make it easier for build and release pipelines to run apt-get,
+# configure apt to not require confirmation (assume the -y argument by default)
 ENV DEBIAN_FRONTEND=noninteractive
 RUN echo "APT::Get::Assume-Yes \"true\";" > /etc/apt/apt.conf.d/90assumeyes
 
@@ -13,26 +15,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libicu60 \
     libunwind8 \
     netcat \
-    libssl1.0
+    libssl1.0 \
+  && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get install maven
-RUN apt-get install openjdk-11-jdk
+RUN apt-get update && apt-get install maven && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install openjdk-11-jdk && rm -rf /var/lib/apt/lists/*
+ENV JAVA_HOME_11_X64="$JAVA_HOME"
 
-ARG BUILD_JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
-ARG BUILD_JAVA_HOME_11_X64="/usr/lib/jvm/java-11-openjdk-amd64"
-
-ENV JAVA_HOME=$BUILD_JAVA_HOME
-ENV JAVA_HOME_11_X64=$BUILD_JAVA_HOME_11_X64
-
-
-
-RUN curl -LsS https://aka.ms/InstallAzureCLIDeb | bash
+RUN curl -LsS https://aka.ms/InstallAzureCLIDeb | bash \
+  && rm -rf /var/lib/apt/lists/*
 
 ARG TARGETARCH=amd64
 ARG AGENT_VERSION=2.185.1
 
 WORKDIR /azp
-
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
       AZP_AGENTPACKAGE_URL=https://vstsagentpackage.azureedge.net/agent/${AGENT_VERSION}/vsts-agent-linux-x64-${AGENT_VERSION}.tar.gz; \
     else \
